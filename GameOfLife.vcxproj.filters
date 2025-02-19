@@ -13,13 +13,52 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="File di risorse\shd_exercises">
+      <UniqueIdentifier>{8fd998a1-2aaa-407c-99a3-52b5d938dc89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
+    <ClCompile Include="include\glad.c">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="src\Board.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="shaders\background_fshd.glsl">
+      <Filter>File di risorse</Filter>
+    </Text>
+    <Text Include="shaders\background_vshd.glsl">
+      <Filter>File di risorse</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Board.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Shader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\grid_vshd.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="shaders\grid_fshd.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="shaders\exercise\ex1_vshd.glsl">
+      <Filter>File di risorse\shd_exercises</Filter>
+    </None>
+    <None Include="shaders\exercise\ex1_fshd.glsl">
+      <Filter>File di risorse\shd_exercises</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -19,8 +19,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glad.c" />
+    <ClCompile Include="src\Board.cpp" />
+    <ClCompile Include="include\glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="shaders\background_fshd.glsl" />
+    <Text Include="shaders\background_vshd.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Board.h" />
+    <ClInclude Include="include\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\exercise\ex1_fshd.glsl" />
+    <None Include="shaders\exercise\ex1_vshd.glsl" />
+    <None Include="shaders\grid_fshd.glsl" />
+    <None Include="shaders\grid_vshd.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
