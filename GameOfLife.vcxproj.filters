@@ -30,6 +30,9 @@
     <ClCompile Include="src\Shader.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="include\lodepng\lodepng.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="shaders\background_fshd.glsl">
@@ -46,6 +49,9 @@
     <ClInclude Include="include\Shader.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="include\stb_image.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\grid_vshd.glsl">
@@ -60,5 +66,19 @@
     <None Include="shaders\exercise\ex1_fshd.glsl">
       <Filter>File di risorse\shd_exercises</Filter>
     </None>
+    <None Include="shaders\exercise\ex2_vshd.glsl">
+      <Filter>File di risorse\shd_exercises</Filter>
+    </None>
+    <None Include="shaders\exercise\ex2_fshd.glsl">
+      <Filter>File di risorse\shd_exercises</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\undertale.png">
+      <Filter>File di risorse</Filter>
+    </Image>
+    <Image Include="img\container.jpg">
+      <Filter>File di risorse</Filter>
+    </Image>
   </ItemGroup>
 </Project>

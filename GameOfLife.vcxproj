@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\lodepng\lodepng.cpp" />
     <ClCompile Include="src\Board.cpp" />
     <ClCompile Include="include\glad.c" />
     <ClCompile Include="main.cpp" />
@@ -31,12 +32,19 @@
   <ItemGroup>
     <ClInclude Include="include\Board.h" />
     <ClInclude Include="include\Shader.h" />
+    <ClInclude Include="include\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\exercise\ex2_fshd.glsl" />
+    <None Include="shaders\exercise\ex2_vshd.glsl" />
     <None Include="shaders\exercise\ex1_fshd.glsl" />
     <None Include="shaders\exercise\ex1_vshd.glsl" />
     <None Include="shaders\grid_fshd.glsl" />
     <None Include="shaders\grid_vshd.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\container.jpg" />
+    <Image Include="img\undertale.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

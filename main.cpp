@@ -1,13 +1,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <lodepng/lodepng.h>
+
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 #include "Board.h"
 #include "Shader.h"
 
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
@@ -26,6 +32,7 @@ int initCloseTriangles();
 int gettingStarted();
 int execGameOfLife();
 int shaderExercises();
+int textureExercises();
 
 
 GLFWwindow* window;
@@ -49,7 +56,8 @@ int main(int argc, char* argv[])
 		return execGameOfLife();
 	}
 
-	shaderExercises();
+	//shaderExercises();
+	textureExercises();
 
 	return 0;
 }
@@ -223,6 +231,143 @@ int execGameOfLife()
 	return 0;
 }
 
+int textureExercises()
+{
+	if (initGLFWWindow(WIN_WIDTH, WIN_HEIGHT) == -1)
+		return -1;
+
+	float vertices[] = {
+		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
+		0.5f, 0.5f, 0.0f,	1.0f, 0.5f, 0.0f,	1.0f, 1.0f,
+		-0.5f, -0.5f, 0.0f,	0.5f, 1.0f, 0.0f,	0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,	0.0f, 0.5f, 1.0f,	1.0f, 0.0f
+	};
+
+	unsigned int indices[] = {
+		0, 1, 2,
+		1, 2, 3
+	};
+
+	Shader shd("shaders\\exercise\\ex2_vshd.glsl", "shaders\\exercise\\ex2_fshd.glsl");
+
+	unsigned int t_VBO;
+	unsigned int t_VAO;
+	unsigned int t_EBO;
+
+	glGenVertexArrays(1, &t_VAO);
+	glGenBuffers(1, &t_VBO);
+	glGenBuffers(1, &t_EBO);
+
+	glBindVertexArray(t_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, t_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float)*3));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
+
+
+	/*
+	*	Define textures
+	*/
+	float borderColor[] = {
+		1.0f, 0.5f, 0.5f, 1.0f
+	};
+
+	/*
+	*	Define first texture unit
+	*/
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	// Mipmap Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // mipmap used for downscale, then OpenGL gives an error
+
+	/*
+	*	Load image for texture
+	*/
+	int h, w, nc;
+	unsigned char* data = stbi_load("C:\\Users\\smero\\Documents\\C++\\exercises\\ex2_gameoflife\\GameOfLife\\img\\container.jpg", &w, &h, &nc, 0);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D); // automatically generate mipmap
+	stbi_image_free(data); // good practice to clean the memory of the image
+
+
+	/*
+	*	Define second texture unit
+	*/
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Mipmap Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // mipmap used for downscale, then OpenGL gives an error
+
+	/*
+	*	Load image for texture
+	*/
+	stbi_set_flip_vertically_on_load(true);
+	data = stbi_load("C:\\Users\\smero\\Documents\\C++\\exercises\\ex2_gameoflife\\GameOfLife\\img\\undertale.png", &w, &h, &nc, 0);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data); // Use GL_RGBA for png alpha channel
+	glGenerateMipmap(GL_TEXTURE_2D); // automatically generate mipmap
+	stbi_image_free(data); // good practice to clean the memory of the image
+
+
+	// Assigne uniform variable for shaders
+	shd.use();
+	glUniform1i(glGetUniformLocation(shd.programID, "texture1"), 0);
+	glUniform1i(glGetUniformLocation(shd.programID, "texture2"), 1);
+
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
+		shd.use();
+		glBindVertexArray(t_VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteVertexArrays(1, &t_VAO);
+	glDeleteBuffers(1, &t_VBO);
+	glDeleteBuffers(1, &t_EBO);
+
+	glfwTerminate();
+
+	return 0;
+}
 
 /*
 *	Utils
