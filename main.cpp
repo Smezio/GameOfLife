@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <lodepng/lodepng.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -19,6 +22,7 @@
 #define WIN_HEIGHT 600
 
 using namespace std;
+using namespace glm;
 
 int initGLFWWindow(const int width, const int height);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -33,6 +37,7 @@ int gettingStarted();
 int execGameOfLife();
 int shaderExercises();
 int textureExercises();
+int transfExercises();
 
 
 GLFWwindow* window;
@@ -56,8 +61,7 @@ int main(int argc, char* argv[])
 		return execGameOfLife();
 	}
 
-	//shaderExercises();
-	textureExercises();
+	transfExercises();
 
 	return 0;
 }
@@ -362,6 +366,122 @@ int textureExercises()
 
 	glDeleteVertexArrays(1, &t_VAO);
 	glDeleteBuffers(1, &t_VBO);
+	glDeleteBuffers(1, &t_EBO);
+
+	glfwTerminate();
+
+	return 0;
+}
+
+int transfExercises()
+{
+	// Translate by 1 along x-axis
+	vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+	mat4 trans = mat4(1.0f); // identity diagonal matrix
+	trans = translate(trans, vec3(1.0f, 1.0f, 0.0f));
+	vec = trans * vec;
+	cout << vec.x << " " << vec.y << " " << vec.z << endl;
+
+	// Rotate and scale
+	// - since trans is passed to the functions, GLM multiplies automatically
+	// - the operations are applied reversely
+	trans = mat4(1.0f);
+	trans = rotate(trans, radians(90.0f), vec3(0.0f, 0.0f, 1.0f)); // define the basis of the rotation
+	trans = scale(trans, vec3(0.5f, 0.5f, 0.5f));
+
+
+	/*
+	*	OpenGL procedure
+	*/
+
+	if (initGLFWWindow(WIN_WIDTH, WIN_HEIGHT))
+		return -1;
+
+	Shader shd("shaders\\exercise\\ex3_0_vshd.glsl", "shaders\\exercise\\ex3_0_fshd.glsl");
+
+	float vertices[]{
+		0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+	};
+
+	unsigned int indices[]{
+		0, 1, 2,
+		0, 2, 3
+	};
+
+	unsigned int t_VAO[2], t_VBO[2], t_EBO;
+
+	glGenVertexArrays(2, t_VAO);
+	glGenBuffers(2, t_VBO);
+	glGenBuffers(1, &t_EBO);
+
+	glBindVertexArray(t_VAO[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, t_VBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, t_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+
+	float vertices2[] = {
+		0.0f, 0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f
+	};
+
+	Shader shd1("shaders\\exercise\\ex3_1_vshd.glsl", "shaders\\exercise\\ex3_1_fshd.glsl");
+
+	glBindVertexArray(t_VAO[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, t_VBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	
+	
+
+	while (!glfwWindowShouldClose(window))
+	{
+		trans = mat4(1.0f); // if I don't initialize, rotation increase with the time
+		trans = translate(trans, vec3(0.5f, 0.0f, 0.0f));
+		trans = rotate(trans, (float)glfwGetTime(), vec3(0.0f, 0.5f, 0.5f));
+
+		mat4 trans2 = mat4(1.0f);
+		trans2 = translate(trans2, vec3(-0.5f, 0.5f, 0.0f));
+		vec3 scalevec(sin(glfwGetTime()));
+		trans2 = scale(trans2, scalevec);
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		shd.use();
+		unsigned int transUniform = glGetUniformLocation(shd.programID, "transform");
+		glUniformMatrix4fv(transUniform, 1, GL_FALSE, value_ptr(trans));
+
+		glBindVertexArray(t_VAO[0]);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		shd1.use();
+		transUniform = glGetUniformLocation(shd1.programID, "transform");
+		glUniformMatrix4fv(transUniform, 1, GL_FALSE, value_ptr(trans2));
+
+		glBindVertexArray(t_VAO[1]);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteBuffers(2, t_VBO);
+	glDeleteBuffers(2, t_VAO);
 	glDeleteBuffers(1, &t_EBO);
 
 	glfwTerminate();

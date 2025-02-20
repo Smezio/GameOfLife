@@ -72,6 +72,10 @@
     <None Include="shaders\exercise\ex2_fshd.glsl">
       <Filter>File di risorse\shd_exercises</Filter>
     </None>
+    <None Include="shaders\exercise\ex3_0_vshd.glsl" />
+    <None Include="shaders\exercise\ex3_0_fshd.glsl" />
+    <None Include="shaders\exercise\ex3_1_vshd.glsl" />
+    <None Include="shaders\exercise\ex3_1_fshd.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\undertale.png">

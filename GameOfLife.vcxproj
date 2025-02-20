@@ -39,6 +39,10 @@
     <None Include="shaders\exercise\ex2_vshd.glsl" />
     <None Include="shaders\exercise\ex1_fshd.glsl" />
     <None Include="shaders\exercise\ex1_vshd.glsl" />
+    <None Include="shaders\exercise\ex3_0_fshd.glsl" />
+    <None Include="shaders\exercise\ex3_0_vshd.glsl" />
+    <None Include="shaders\exercise\ex3_1_fshd.glsl" />
+    <None Include="shaders\exercise\ex3_1_vshd.glsl" />
     <None Include="shaders\grid_fshd.glsl" />
     <None Include="shaders\grid_vshd.glsl" />
   </ItemGroup>
