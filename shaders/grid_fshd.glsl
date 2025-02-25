@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 GridColor;
 
-uniform vec4 GridColorInput;
+in vec4 inCol;
 
 void main()
 {
-	GridColor = GridColorInput;
+	GridColor = inCol;
 }

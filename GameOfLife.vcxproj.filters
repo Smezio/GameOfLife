@@ -18,9 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="include\glad.c">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -31,6 +28,18 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="include\lodepng\lodepng.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="gameoflife.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WindowManager.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,6 +59,12 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\stb_image.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Camera.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WindowManager.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
@@ -76,6 +91,10 @@
     <None Include="shaders\exercise\ex3_0_fshd.glsl" />
     <None Include="shaders\exercise\ex3_1_vshd.glsl" />
     <None Include="shaders\exercise\ex3_1_fshd.glsl" />
+    <None Include="shaders\exercise\ex4_1_vshd.glsl" />
+    <None Include="shaders\exercise\ex4_0_fshd.glsl" />
+    <None Include="shaders\exercise\ex4_0_vshd.glsl" />
+    <None Include="shaders\exercise\ex4_1_fshd.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\undertale.png">

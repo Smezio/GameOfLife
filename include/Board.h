@@ -17,12 +17,12 @@ private:
 	vector<vector<int>> dashboard;
 
 public:
-	Board(unsigned int x = 10, unsigned int y = 10);
+	Board(const unsigned int w, const unsigned int h, const unsigned int x = 10, const unsigned int y = 10);
 	Board(Board&&) = delete;
 	Board(const Board&) = delete;
 		
-	drawingInfo* getGridVertices();
-	drawingInfo* getBackgroundVertices();
+	drawingInfo getGridVertices(bool normalized = false);
+	drawingInfo getBackgroundVertices(bool normalized = false);
 	unsigned int getAbscissa();
 	unsigned int getOrdinate();
 };

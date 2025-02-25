@@ -13,6 +13,7 @@
 
 #include "Board.h"
 #include "Shader.h"
+#include "Camera.h"
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -28,6 +29,7 @@ int initGLFWWindow(const int width, const int height);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void writeOnConsole(GLFWwindow* window, int key, int scancode, int action, int mods);
 int checkShaderCompilation(unsigned int& shader);
+void moveCamera(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 void initTriangle();
 void initRectangle();
@@ -38,13 +40,19 @@ int execGameOfLife();
 int shaderExercises();
 int textureExercises();
 int transfExercises();
+int coordSysExercises();
+int coordSysCubeExercises();
+int cameraExercises();
 
 
 GLFWwindow* window;
 unsigned int VAO;
 unsigned int shaderProgram;
+Camera* cam;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
-int main(int argc, char* argv[])
+int pippo(int argc, char* argv[])
 {
 	if (argc < 2)
 	{
@@ -61,7 +69,7 @@ int main(int argc, char* argv[])
 		return execGameOfLife();
 	}
 
-	transfExercises();
+	cameraExercises();
 
 	return 0;
 }
@@ -165,8 +173,8 @@ int execGameOfLife()
 	//Shader shd1("background_vshd.glsl", "background_fshd.glsl");
 	Shader shd1("grid_vshd.glsl", "grid_fshd.glsl");
 
-	drawingInfo* background = board.getBackgroundVertices();
-	drawingInfo* grid = board.getGridVertices();
+	drawingInfo background = board.getBackgroundVertices();
+	drawingInfo grid = board.getGridVertices();
 
 	unsigned int golVAO[2];
 	unsigned int golVBO[2];
@@ -179,12 +187,12 @@ int execGameOfLife()
 	// Background
 	glBindVertexArray(golVAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, golVBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, &(background->vertices[0]), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, &(background.vertices[0]), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, golEBO[0]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, &(background->indices[0]), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, &(background.indices[0]), GL_STATIC_DRAW);
 
 	// Grid
 	/*glBindVertexArray(golVAO[1]);
@@ -201,7 +209,7 @@ int execGameOfLife()
 
 	glBindVertexArray(golVAO[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, golVBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 72, &(grid->vertices[0]), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 72, &(grid.vertices[0]), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
@@ -489,6 +497,400 @@ int transfExercises()
 	return 0;
 }
 
+int coordSysExercises()
+{
+	if (initGLFWWindow(WIN_WIDTH, WIN_HEIGHT))
+		return -1;
+
+
+	// Model matrix to apply transformation to all objects' vertices to the global world space
+	mat4 modelM = mat4(1.0f);
+	modelM = rotate(modelM, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
+
+	// View matrix to move the "camera" backward. Apply transformation to all object forward
+	mat4 viewM = mat4(1.0f);
+	viewM = translate(viewM, vec3(0.0f, 0.0f, -3.0f));
+
+	// Projection matrix to apply perspective projection to view
+	mat4 projM = mat4(1.0f);
+	projM = perspective(radians(45.0f), (float) WIN_WIDTH / (float) WIN_HEIGHT, 0.1f, 100.0f);
+
+
+	float plane[] = {
+		-0.5f, 0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
+		0.5f, 0.5f, 0.0f,	1.0f, 0.5f, 0.0f,	1.0f, 1.0f,
+		-0.5f, -0.5f, 0.0f,	0.5f, 1.0f, 0.0f,	0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,	0.0f, 0.5f, 1.0f,	1.0f, 0.0f
+	};
+
+	unsigned int indices[] = {
+		0, 1, 2,
+		1, 2, 3
+	};
+
+
+	Shader shd("shaders\\exercise\\ex4_0_vshd.glsl", "shaders\\exercise\\ex4_0_fshd.glsl");
+
+	unsigned int c_VAO, c_VBO, c_EBO;
+	glGenVertexArrays(1, &c_VAO);
+	glGenBuffers(1, &c_VBO);
+	glGenBuffers(1, &c_EBO);
+
+	glBindVertexArray(c_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, c_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(plane), plane, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void*)(sizeof(float) * 6));
+	glEnableVertexAttribArray(2);
+
+
+
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Mipmap Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // mipmap used for downscale, then OpenGL gives an error
+
+	/*
+	*	Load image for texture
+	*/
+	int h, w, nc;
+	unsigned char* data = stbi_load("img/undertale.png", &w, &h, &nc, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data); // Use GL_RGBA for png alpha channel
+	glGenerateMipmap(GL_TEXTURE_2D); // automatically generate mipmap
+	stbi_image_free(data); // good practice to clean the memory of the image
+
+	// Assigne uniform variable for shaders
+	shd.use();
+	glUniform1i(glGetUniformLocation(shd.programID, "texture1"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "model"), 1, GL_FALSE, value_ptr(modelM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "view"), 1, GL_FALSE, value_ptr(viewM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "proj"), 1, GL_FALSE, value_ptr(projM));
+
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		shd.use();
+
+
+
+		glBindVertexArray(c_VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteBuffers(1, &c_VBO);
+	glDeleteBuffers(1, &c_EBO);
+	glDeleteVertexArrays(1, &c_VAO);
+
+	glfwTerminate();
+
+	return 0;
+}
+
+int coordSysCubeExercises()
+{
+	if (initGLFWWindow(WIN_WIDTH, WIN_HEIGHT))
+		return -1;
+
+
+	// Model matrix to apply transformation to all objects' vertices to the global world space
+	mat4 modelM = mat4(1.0f);
+	modelM = rotate(modelM, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
+
+	// View matrix to move the "camera" backward. Apply transformation to all object forward
+	mat4 viewM = mat4(1.0f);
+	viewM = translate(viewM, vec3(0.0f, 0.0f, -5.0f));
+
+	// Projection matrix to apply perspective projection to view
+	mat4 projM = mat4(1.0f);
+	projM = perspective(radians(45.0f), (float)WIN_WIDTH / (float)WIN_HEIGHT, 0.1f, 100.0f);
+	//projM = ortho(0.0f, (float)WIN_WIDTH, 0.0f, (float)WIN_HEIGHT, 0.1f, 20.0f);
+
+
+	float vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	Shader shd("shaders\\exercise\\ex4_1_vshd.glsl", "shaders\\exercise\\ex4_1_fshd.glsl");
+
+	unsigned int c_VAO, c_VBO;
+	glGenVertexArrays(1, &c_VAO);
+	glGenBuffers(1, &c_VBO);
+
+	glBindVertexArray(c_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, c_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Mipmap Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // mipmap used for downscale, then OpenGL gives an error
+
+	/*
+	*	Load image for texture
+	*/
+	int h, w, nc;
+	unsigned char* data = stbi_load("img/container.jpg", &w, &h, &nc, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data); // Use GL_RGBA for png alpha channel
+	glGenerateMipmap(GL_TEXTURE_2D); // automatically generate mipmap
+	stbi_image_free(data); // good practice to clean the memory of the image
+
+	// Assigne uniform variable for shaders
+	shd.use();
+	glUniform1i(glGetUniformLocation(shd.programID, "texture1"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "model"), 1, GL_FALSE, value_ptr(modelM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "view"), 1, GL_FALSE, value_ptr(viewM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "proj"), 1, GL_FALSE, value_ptr(projM));
+
+
+	glEnable(GL_DEPTH_TEST); // Active the Depth Testing process, that compare depth value between fragments
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		shd.use();
+
+		modelM = mat4(1.0f);
+		modelM = rotate(modelM, radians(90.0f) * (float)glfwGetTime(), vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(glGetUniformLocation(shd.programID, "model"), 1, GL_FALSE, value_ptr(modelM));
+
+		glBindVertexArray(c_VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteBuffers(1, &c_VBO);
+	glDeleteVertexArrays(1, &c_VAO);
+
+	glfwTerminate();
+
+	return 0;
+}
+
+int cameraExercises()
+{
+	if (initGLFWWindow(WIN_WIDTH, WIN_HEIGHT))
+		return -1;
+
+	glfwSetKeyCallback(window, moveCamera);
+
+	// Model matrix to apply transformation to all objects' vertices to the global world space
+	mat4 modelM = mat4(1.0f);
+	modelM = rotate(modelM, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
+
+	// View matrix to move the "camera" backward. Apply transformation to all object forward
+	mat4 viewM = mat4(1.0f);
+	viewM = translate(viewM, vec3(0.0f, 0.0f, -5.0f));
+
+	// Projection matrix to apply perspective projection to view
+	mat4 projM = mat4(1.0f);
+	projM = perspective(radians(45.0f), (float)WIN_WIDTH / (float)WIN_HEIGHT, 0.1f, 100.0f);
+
+
+	float vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	Shader shd("shaders\\exercise\\ex4_1_vshd.glsl", "shaders\\exercise\\ex4_1_fshd.glsl");
+
+	unsigned int c_VAO, c_VBO;
+	glGenVertexArrays(1, &c_VAO);
+	glGenBuffers(1, &c_VBO);
+
+	glBindVertexArray(c_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, c_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// Wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Mipmap Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // mipmap used for downscale, then OpenGL gives an error
+
+	/*
+	*	Load image for texture
+	*/
+	int h, w, nc;
+	unsigned char* data = stbi_load("img/container.jpg", &w, &h, &nc, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data); // Use GL_RGBA for png alpha channel
+	glGenerateMipmap(GL_TEXTURE_2D); // automatically generate mipmap
+	stbi_image_free(data); // good practice to clean the memory of the image
+
+	// Assigne uniform variable for shaders
+	shd.use();
+	glUniform1i(glGetUniformLocation(shd.programID, "texture1"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "model"), 1, GL_FALSE, value_ptr(modelM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "view"), 1, GL_FALSE, value_ptr(viewM));
+	glUniformMatrix4fv(glGetUniformLocation(shd.programID, "proj"), 1, GL_FALSE, value_ptr(projM));
+
+
+	glEnable(GL_DEPTH_TEST); // Active the Depth Testing process, that compare depth value between fragments
+
+	cam = new Camera();
+
+	while (!glfwWindowShouldClose(window))
+	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		shd.use();
+
+		cam->speed = 5.0f;
+		viewM = cam->lookAt();
+		//viewM = cam->lookAt(0.0f, 0.0f, 0.0f);
+		glUniformMatrix4fv(glGetUniformLocation(shd.programID, "view"), 1, GL_FALSE, &viewM[0][0]);
+
+		glBindVertexArray(c_VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteBuffers(1, &c_VBO);
+	glDeleteVertexArrays(1, &c_VAO);
+
+	glfwTerminate();
+
+	return 0;
+}
+
 /*
 *	Utils
 */
@@ -555,6 +957,17 @@ void writeOnConsole(GLFWwindow* window, int key, int scancode, int action, int m
 		glClearColor(0.6f, 0.2f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
+
+	if (key == GLFW_KEY_D)
+		glEnable(GL_DEPTH_TEST);
+
+	if (key == GLFW_KEY_F)
+		glDisable(GL_DEPTH_TEST);
+
+	if (key == GLFW_KEY_1)
+		++cam->speed;
+	if (key == GLFW_KEY_2)
+		--cam->speed;
 }
 
 void initTriangle() {
@@ -917,3 +1330,15 @@ int checkShaderCompilation(unsigned int &shader)
 
 	return 0;
 }
+
+/*void moveCamera(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cam->position += cam->forward() * cam->speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cam->position -= cam->forward() * cam->speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cam->position += cam->right() * cam->speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cam->position -= cam->right() * cam->speed * deltaTime;
+}*/
