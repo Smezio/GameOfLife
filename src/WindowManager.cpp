@@ -1,6 +1,7 @@
 #include "WindowManager.h"
 
-WindowManager::WindowManager(const int width, const int height, string title)
+WindowManager::WindowManager(const unsigned int width, const unsigned int height, const string title, const float near, const float far) 
+	: width{width}, height{height}, near{near}, far{far}
 {
 	glfwInit();
 
@@ -8,6 +9,8 @@ WindowManager::WindowManager(const int width, const int height, string title)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, false);
+
 
 	// Create GLFW window and make Context
 	window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
@@ -26,16 +29,15 @@ WindowManager::WindowManager(const int width, const int height, string title)
 
 	// Define viewport of OpenGL in GLFW window
 	glViewport(0, 0, width, height);
-
 	
 	// When window (GLFW) will be resized, the viewport (OpenGL) will be adapted
-	glfwSetFramebufferSizeCallback(window, resizeWindowCallback);
+	//glfwSetFramebufferSizeCallback(window, resizeWindowCallback);
 }
 
-WindowManager* WindowManager::getInstance(const int width, const int height, const string title)
+WindowManager* WindowManager::getInstance(const unsigned int width, const unsigned int height, const string title, const float near, const float far)
 {
 	if (manager == nullptr)
-		manager = new WindowManager(width, height, title);
+		manager = new WindowManager(width, height, title, near, far);
 	
 	return manager;
 }
@@ -45,7 +47,8 @@ GLFWwindow* WindowManager::getWindow()
 	return window;
 }
 
-void WindowManager::resizeWindowCallback(GLFWwindow* window, int width, int height)
+mat4 WindowManager::getOrthoProj()
 {
-	glViewport(0, 0, width, height);
+	mat4 matrix{ 1.0f };
+	return ortho(0.0f, (float)width, (float)height, 0.0f, near, far);
 }

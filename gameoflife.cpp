@@ -1,22 +1,53 @@
+#include "Global.h"
 #include "WindowManager.h"
 #include "Camera.h"
 #include "Board.h"
 #include "Shader.h"
+#include "Game.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <functional>
+
 using namespace std;
 using namespace glm;
 
+
 WindowManager* WindowManager::manager = nullptr;
 Camera cam{ 0.0f, 0.0f, 20.0f };
+Game game = Game(50, 50, 1366, 768, "Game of Life");
 
 void useSeparatedMatrices(Shader& boardShd, int& w, int& h);
 void moveCamera(GLFWwindow* window, int key, int scancode, int action, int mods);
+void getMouseClick(GLFWwindow* window, int button, int action, int mods);
 
 int main(int argc, char** argv)
+{
+	game.init(1366, 768);
+
+	glfwSetMouseButtonCallback(game.getWindow(), getMouseClick);
+	
+
+	while (!glfwWindowShouldClose(game.getWindow()))
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		game.update();
+
+		game.render();
+
+		glfwSwapBuffers(game.getWindow());
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+
+	return 0;
+}
+
+int old_main(int argc, char** argv)
 {
 	WindowManager* winManager = WindowManager::getInstance(1366, 768, "Game of Life");
 	glfwSetKeyCallback(winManager->getWindow(), moveCamera);
@@ -80,10 +111,10 @@ int main(int argc, char** argv)
 
 	glBindVertexArray(VAO[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, board.getBackgroundVertices().vertices.size() * sizeof(float), board.getBackgroundVertices().vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, board.getBackgroundInfo().vertices.size() * sizeof(float), board.getBackgroundInfo().vertices.data(), GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, board.getBackgroundVertices().indices.size() * sizeof(float), board.getBackgroundVertices().indices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, board.getBackgroundInfo().indices.size() * sizeof(float), board.getBackgroundInfo().indices.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, sizeof(float) * 3, (void*)0);
 	glEnableVertexAttribArray(0);
@@ -103,14 +134,14 @@ int main(int argc, char** argv)
 
 	glBindVertexArray(VAO[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, board.getGridVertices().vertices.size() * sizeof(float), board.getGridVertices().vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, board.getGridInfo().vertices.size() * sizeof(float), board.getGridInfo().vertices.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
 	glEnableVertexAttribArray(0);
 
 
 	gridShd.use();
-	// Compute transformation matrixà
+	// Compute transformation matrix
 	mat4 gridM4 = mat4(1.0f);	
 	gridM4 = scale(gridM4, vec3(w, h, 1.0f));
 	gridM4 = ortho(0.0f, (float)w, (float)h, 0.0f, -10.0f, 10.0f) * gridM4;
@@ -123,12 +154,12 @@ int main(int argc, char** argv)
 
 		boardShd.use();
 		glBindVertexArray(VAO[0]);
-		glDrawElements(GL_TRIANGLES, board.getBackgroundVertices().indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, board.getBackgroundInfo().indices.size(), GL_UNSIGNED_INT, 0);
 
 
 		gridShd.use();
 		glBindVertexArray(VAO[1]);
-		glDrawArrays(GL_LINES, 0, board.getGridVertices().vertices.size());
+		glDrawArrays(GL_LINES, 0, board.getGridInfo().vertices.size());
 
 		glfwSwapBuffers(winManager->getWindow());
 		glfwPollEvents();
@@ -178,4 +209,9 @@ void moveCamera(GLFWwindow* window, int key, int scancode, int action, int mods)
 		cam.position += cam.right() * cam.speed;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.position -= cam.right() * cam.speed;
+}
+
+void getMouseClick(GLFWwindow* window, int button, int action, int mods)
+{
+	game.processMouseInput(window, button, action, mods);
 }

@@ -52,7 +52,7 @@ Camera* cam;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-int pippo(int argc, char* argv[])
+int exercises_main(int argc, char* argv[])
 {
 	if (argc < 2)
 	{
@@ -173,8 +173,8 @@ int execGameOfLife()
 	//Shader shd1("background_vshd.glsl", "background_fshd.glsl");
 	Shader shd1("grid_vshd.glsl", "grid_fshd.glsl");
 
-	drawingInfo background = board.getBackgroundVertices();
-	drawingInfo grid = board.getGridVertices();
+	drawingInfo background = board.getBackgroundInfo();
+	drawingInfo grid = board.getGridInfo();
 
 	unsigned int golVAO[2];
 	unsigned int golVBO[2];

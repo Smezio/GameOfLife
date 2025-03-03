@@ -6,6 +6,11 @@
 #include <fstream>
 #include <sstream>
 
+Shader::Shader()
+{
+	programID = 0;
+}
+
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
 	/*

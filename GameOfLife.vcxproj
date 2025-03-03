@@ -19,8 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Global.cpp" />
+    <ClCompile Include="src\Meeple.cpp" />
+    <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="gameoflife.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ex_main.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="include\lodepng\lodepng.cpp" />
     <ClCompile Include="src\Board.cpp" />
@@ -33,13 +36,18 @@
     <Text Include="shaders\background_vshd.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\Board.h" />
+    <ClInclude Include="include\Global.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\WindowManager.h" />
+    <ClInclude Include="include\Meeple.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\button_fshd.glsl" />
+    <None Include="shaders\button_vshd.glsl" />
     <None Include="shaders\exercise\ex2_fshd.glsl" />
     <None Include="shaders\exercise\ex2_vshd.glsl" />
     <None Include="shaders\exercise\ex1_fshd.glsl" />
@@ -54,6 +62,8 @@
     <None Include="shaders\exercise\ex4_1_vshd.glsl" />
     <None Include="shaders\grid_fshd.glsl" />
     <None Include="shaders\grid_vshd.glsl" />
+    <None Include="shaders\meeple_fshd.glsl" />
+    <None Include="shaders\meeple_vshd.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\container.jpg" />

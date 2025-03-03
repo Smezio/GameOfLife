@@ -39,7 +39,16 @@
     <ClCompile Include="src\WindowManager.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="ex_main.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Game.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Meeple.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Global.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,6 +74,15 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\WindowManager.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Game.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Meeple.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Global.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,6 +113,10 @@
     <None Include="shaders\exercise\ex4_0_fshd.glsl" />
     <None Include="shaders\exercise\ex4_0_vshd.glsl" />
     <None Include="shaders\exercise\ex4_1_fshd.glsl" />
+    <None Include="shaders\button_vshd.glsl" />
+    <None Include="shaders\button_fshd.glsl" />
+    <None Include="shaders\meeple_vshd.glsl" />
+    <None Include="shaders\meeple_fshd.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\undertale.png">
