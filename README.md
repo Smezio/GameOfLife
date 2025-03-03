@@ -1,6 +1,5 @@
 # GameOfLife
 
-## Description
 Implementation of 2D Conway's "Game Of Life" application for studying purpose.
 The application is written using C++ and OpenGL Core for graphic development.
 
