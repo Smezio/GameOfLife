@@ -9,4 +9,5 @@ The project has two entry point:
 - ex_main.cpp: contains the basic exercises to study OpenGL.
 
 The resources where I've studied OpenGL are the following:
-<a link="https://learnopengl.com/">Link<\a>
+LearnOpenGL | https://learnopengl.com/
+Songho.ca | https://www.songho.ca/opengl/index.html
